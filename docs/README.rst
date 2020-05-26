@@ -67,6 +67,65 @@ Contributing to this repo
 
 Please see `How to contribute <https://github.com/saltstack-formulas/.github/blob/master/CONTRIBUTING.rst>`_ for more details.
 
+Usage
+-----
+
+The configuration of nginx is done via pillar (see ``pillar.example``).
+
+Install a custom static configuration file:
+
+.. code-block:: yaml
+
+    nginx:
+      server:
+        config:
+          source_path: salt://path_to_nginx_conf_file/nginx.conf
+
+
+Define the configuration from pillar:
+
+.. code-block:: yaml
+
+    nginx:
+      server:
+        config:
+          worker_processes: 4
+          load_module: modules/ngx_http_lua_module.so
+          pid: /var/run/nginx.pid
+          events:
+            worker_connections: 768
+          http:
+            sendfile: 'on'
+            include:
+              - /etc/nginx/mime.types
+              - /etc/nginx/conf.d/*.conf
+              - /etc/nginx/sites-enabled/*
+
+Define your servers:
+
+.. code-block:: yaml
+
+    nginx:
+      servers:
+        managed:
+          a-web-site:
+            enabled: true
+            overwrite: true # overwrite an existing server file
+            config:
+              - server:
+                - server_name: localhost
+                - listen:
+                  - '80 default_server'
+		  - '443 ssl'
+                - index: 'index.html index.htm'
+                - location ~ .htm:
+                    - try_files: '$uri $uri/ =404'
+                    - test: something else
+
+          an-old-unused-website:
+            enabled: false
+            deleted: true
+
 Available states
 ----------------
 
